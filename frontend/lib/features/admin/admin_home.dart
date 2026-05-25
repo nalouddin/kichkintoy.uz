@@ -23,7 +23,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Theme(
+      data: ThemeData.light(),
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Admin paneli'),
         backgroundColor: const Color(0xFF2D3436),
@@ -73,7 +75,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

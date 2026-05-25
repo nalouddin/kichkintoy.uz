@@ -2,6 +2,45 @@ import 'dart:io' show Platform;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Webda flutter_secure_storage HTTPS talab qiladi, shuning uchun
+// webda shared_preferences, mobileda flutter_secure_storage ishlatamiz.
+class _Storage {
+  final FlutterSecureStorage _secure = const FlutterSecureStorage();
+
+  Future<void> write({required String key, required String? value}) async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      if (value == null) {
+        await prefs.remove(key);
+      } else {
+        await prefs.setString(key, value);
+      }
+    } else {
+      await _secure.write(key: key, value: value);
+    }
+  }
+
+  Future<String?> read({required String key}) async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(key);
+    } else {
+      return await _secure.read(key: key);
+    }
+  }
+
+  Future<void> deleteAll() async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('access_token');
+      await prefs.remove('refresh_token');
+    } else {
+      await _secure.deleteAll();
+    }
+  }
+}
 
 /// Backend API bilan ishlovchi asosiy klient.
 class ApiClient {
@@ -33,7 +72,7 @@ class ApiClient {
   factory ApiClient() => _instance;
 
   late final Dio _dio;
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final _Storage _storage = _Storage();
 
   ApiClient._internal() {
     _dio = Dio(BaseOptions(
